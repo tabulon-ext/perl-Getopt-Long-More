@@ -95,7 +95,8 @@ sub GetOptionsFromArray {
     my $arg_handler_accessed;
   MAPPING:  # Resulting in the complete EVAPORATION of OptSpec objects, replaced by their destination, if one exists.
       for my $e (@opts_spec) {
-        unless ( ref($e) eq 'Getopt::Long::More::OptSpec' ) {
+        # unless ( ref($e) eq 'Getopt::Long::More::OptSpec' ) {
+        unless (ref($e) && eval { $e->DOES('Getopt::Long::More::OptSpec') } ) {
           push @go_opts_spec, $e;
           next;
         }
@@ -144,7 +145,8 @@ sub GetOptionsFromArray {
                 if ($i % 2 == 0) {
                     my $o = $opts_spec[$i];
                     my $os = $opts_spec[$i+1];
-                    if (ref($os) eq 'Getopt::Long::More::OptSpec') {
+                    # if (ref($os) eq 'Getopt::Long::More::OptSpec') {
+                    if ( ref($os) && eval { $os->DOES('Getopt::Long::More::OptSpec') } ) {
                         my $completion = $os->{completion};
                         next unless $completion;
                         if (ref $completion eq 'ARRAY') {
@@ -236,7 +238,8 @@ sub GetOptionsFromArray {
     my $i = -1;
     for (@opts_spec) {
         $i++;
-        if ($i > 0 && ref($_) eq 'Getopt::Long::More::OptSpec') {
+        # if ($i > 0 && ref($_) eq 'Getopt::Long::More::OptSpec') {
+        if ($i > 0 && ref($_) && eval { $_->DOES('Getopt::Long::More::OptSpec') } ) {
             my $osname = $opts_spec[$i-1];
 
             # check required
@@ -315,7 +318,9 @@ sub HelpMessage {
             my $len = length($osname);
             $max_opt_spec_len = $len if $max_opt_spec_len < $len;
             my $os = $opts_spec->[$i+1];
-            if (ref($os) eq 'Getopt::Long::More::OptSpec') {
+
+            # if (ref($os) eq 'Getopt::Long::More::OptSpec') {            
+            if ( ref($os) && eval { $os->DOES('Getopt::Long::More::OptSpec') } ) {
                 $entries[-1][1] ||= $os->{summary};
                 $entries[-1][3] = 1 if $os->{required};
                 $entries[-1][4] = $os->{default};
@@ -357,7 +362,7 @@ sub OptionsPod {
 
             push @entries, [$osname, "", "", 0, undef]; # [opt, summary, desc, required?, default]
             my $os = $opts_spec->[$i+1];
-            if (ref($os) eq 'Getopt::Long::More::OptSpec') {
+            if ( ref($os) && eval { $os->DOES('Getopt::Long::More::OptSpec') } ) {
                 $entries[-1][1] ||= $os->{summary};
                 $entries[-1][2] ||= $os->{description};
                 $entries[-1][3] = 1 if $os->{required};
@@ -486,6 +491,8 @@ sub new {
     }
     bless $obj, $class;
 }
+
+
 
 1;
 # ABSTRACT: Like Getopt::Long, but with more stuffs
